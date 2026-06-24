@@ -3,6 +3,7 @@ import type { SidebarsConfig } from "@docusaurus/plugin-content-docs";
 const sidebars = {
     rules: [
         {
+            className: "sb-cat-guides",
             collapsed: false,
             items: [
                 "guides/intro",
@@ -15,18 +16,36 @@ const sidebars = {
             type: "category",
         },
         {
+            className: "sb-cat-presets",
             collapsed: false,
             items: [
-                "presets/recommended",
-                "presets/actionlint-only",
-                "presets/configuration",
-                "presets/all",
+                {
+                    className: "sb-preset-recommended",
+                    id: "presets/recommended",
+                    type: "doc",
+                },
+                {
+                    className: "sb-preset-only",
+                    id: "presets/actionlint-only",
+                    type: "doc",
+                },
+                {
+                    className: "sb-preset-configuration",
+                    id: "presets/configuration",
+                    type: "doc",
+                },
+                {
+                    className: "sb-preset-all",
+                    id: "presets/all",
+                    type: "doc",
+                },
             ],
             label: "Presets",
             link: { id: "presets/index", type: "doc" },
             type: "category",
         },
         {
+            className: "sb-cat-rules",
             collapsed: false,
             items: [
                 "actionlint",
@@ -50,4 +69,5 @@ const sidebars = {
         },
     ],
 } satisfies SidebarsConfig;
+
 export default sidebars;

@@ -15,7 +15,7 @@ type ActionlintRuleOption = Readonly<{
     timeoutMs?: number;
 }>;
 type MessageIds = "actionlintConfigError" | "actionlintProblem";
-type Options = readonly [ActionlintRuleOption?];
+type Options = [ActionlintRuleOption?];
 
 type ReportLocation = Readonly<{
     end: { column: number; line: number };

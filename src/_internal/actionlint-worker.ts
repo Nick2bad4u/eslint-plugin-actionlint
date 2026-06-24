@@ -99,7 +99,7 @@ const runActionlint = (
                     `Actionlint exited with status ${String(result.status)}.`
             );
         }
-        return { messages: parseActionlintOutput(result.stdout ?? "") };
+        return { messages: parseActionlintOutput(result.stdout) };
     } finally {
         rmSync(temporaryDirectory, { force: true, recursive: true });
     }
