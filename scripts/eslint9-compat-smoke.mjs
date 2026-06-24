@@ -113,7 +113,7 @@ const run = async () => {
         overrideConfigFile: true,
     });
     const [bridgeResult] = await bridgeEslint.lintText(
-        "name: test\non: [push]\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo ${{ secrets.NOPE }}\n",
+        "name: test\non: [push]\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n        with:\n          definitely-not-real: true\n",
         { filePath: ".github/workflows/compat.yml" }
     );
     assertDiagnostic(
