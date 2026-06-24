@@ -61,22 +61,33 @@ const parseActionlintOutput = (
     stdout: string
 ): SerializableActionlintMessage[] => {
     const messages: SerializableActionlintMessage[] = [];
-    const outputLines = stringSplit(stdout.replaceAll("\r\n", "\n"), "\n");
-    for (const line of outputLines) {
-        const trimmed = line.trim();
-        if (trimmed.length === 0) continue;
-        const parsedJson: unknown = JSON.parse(trimmed);
-        const parsed = toJsonRecord(parsedJson);
+    const pushParsedMessage = (value: unknown, fallback: string): void => {
+        const parsed = toJsonRecord(value);
         const column = parsed["column"];
+        const endColumn = parsed["end_column"];
+        const endLine = parsed["end_line"];
         const kind = parsed["kind"];
         const lineNumber = parsed["line"];
         const message = parsed["message"];
         messages.push({
             column: typeof column === "number" ? column : 1,
+            ...(typeof endColumn === "number" && { endColumn }),
+            ...(typeof endLine === "number" && { endLine }),
             kind: typeof kind === "string" ? kind : "actionlint",
             line: typeof lineNumber === "number" ? lineNumber : 1,
-            message: typeof message === "string" ? message : trimmed,
+            message: typeof message === "string" ? message : fallback,
         });
+    };
+    const outputLines = stringSplit(stdout.replaceAll("\r\n", "\n"), "\n");
+    for (const line of outputLines) {
+        const trimmed = line.trim();
+        if (trimmed.length === 0) continue;
+        const parsedJson: unknown = JSON.parse(trimmed);
+        if (Array.isArray(parsedJson)) {
+            for (const item of parsedJson) pushParsedMessage(item, trimmed);
+        } else {
+            pushParsedMessage(parsedJson, trimmed);
+        }
     }
     return messages;
 };

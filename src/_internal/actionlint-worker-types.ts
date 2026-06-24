@@ -50,6 +50,8 @@ export type SerializableActionlintLintOptions = Readonly<{
  */
 export type SerializableActionlintMessage = Readonly<{
     column: number;
+    endColumn?: number;
+    endLine?: number;
     kind: string;
     line: number;
     message: string;
