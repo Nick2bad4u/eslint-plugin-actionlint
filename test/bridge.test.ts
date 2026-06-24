@@ -1,12 +1,35 @@
 import { ESLint, type Linter } from "eslint";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import path from "node:path";
+import * as path from "node:path";
 import { describe, expect, it } from "vitest";
 
 import actionlintPlugin from "../src/plugin";
 
 const bridgeConfig = actionlintPlugin.configs.actionlintOnly as Linter.Config;
+const secretExpression = ["$", "{{ secrets.NOPE }}"].join("");
+const invalidWorkflowText = [
+    "name: test",
+    "on: [push]",
+    "jobs:",
+    "  build:",
+    "    runs-on: ubuntu-latest",
+    "    steps:",
+    `      - run: echo ${secretExpression}`,
+    "",
+].join("\n");
+
+const usingTemporaryDirectory = async <Result>(
+    prefix: string,
+    callback: (temporaryDirectory: string) => Promise<Result>
+): Promise<Result> => {
+    const temporaryDirectory = mkdtempSync(path.join(tmpdir(), prefix));
+    try {
+        return await callback(temporaryDirectory);
+    } finally {
+        rmSync(temporaryDirectory, { force: true, recursive: true });
+    }
+};
 const createEngine = (
     ruleOptions: Readonly<Record<string, unknown>> = {}
 ): ESLint =>
@@ -24,34 +47,33 @@ const createEngine = (
 
 describe("actionlint bridge rule", () => {
     it("reports Actionlint diagnostics through ESLint", async () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
-        const temporaryDirectory = mkdtempSync(
-            path.join(tmpdir(), "actionlint-bridge-")
-        );
-        try {
-            const configPath = path.join(
-                temporaryDirectory,
-                "ActionLintConfig.yaml"
-            );
-            writeFileSync(configPath, "config-variables:\n  - NODE_ENV\n");
-            const eslint = createEngine({
-                configFile: configPath,
-                pyflakes: false,
-                shellcheck: false,
-            });
-            const [result] = await eslint.lintText(
-                "name: test\non: [push]\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo ${{ secrets.NOPE }}\n",
-                {
+        await usingTemporaryDirectory(
+            "actionlint-bridge-",
+            async (temporaryDirectory) => {
+                const configPath = path.join(
+                    temporaryDirectory,
+                    "ActionLintConfig.yaml"
+                );
+                writeFileSync(configPath, "config-variables:\n  - NODE_ENV\n");
+                const eslint = createEngine({
+                    configFile: configPath,
+                    pyflakes: false,
+                    shellcheck: false,
+                });
+                const [result] = await eslint.lintText(invalidWorkflowText, {
                     filePath: ".github/workflows/test.yml",
-                }
-            );
+                });
 
-            expect(result).toBeDefined();
-            expect(result!.messages.length).toBeGreaterThan(0);
-            expect(result!.messages[0]?.ruleId).toBe("actionlint/actionlint");
-        } finally {
-            rmSync(temporaryDirectory, { force: true, recursive: true });
-        }
+                expect(result?.messages).not.toHaveLength(0);
+                expect(result?.messages[0]?.ruleId).toBe(
+                    "actionlint/actionlint"
+                );
+                expect(result?.messages[0]?.message).toStrictEqual(
+                    expect.any(String)
+                );
+            }
+        );
     }, 30_000);
 });

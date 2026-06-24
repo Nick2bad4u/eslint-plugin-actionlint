@@ -2,6 +2,9 @@ import type { ArrayValues } from "type-fest";
 
 import { objectHasOwn } from "ts-extras";
 
+/**
+ * ActionlintConfigNames actionlint config names contract.
+ */
 export const actionlintConfigNames = [
     "actionlintOnly",
     "all",
@@ -11,14 +14,23 @@ export const actionlintConfigNames = [
     "workflows",
 ] as const;
 
+/**
+ * ActionlintConfigMetadata actionlint config metadata contract.
+ */
 export type ActionlintConfigMetadata = Readonly<{
     icon: string;
     presetName: `actionlint:${ActionlintConfigName}`;
     readmeOrder: number;
 }>;
 
+/**
+ * ActionlintConfigName actionlint config name contract.
+ */
 export type ActionlintConfigName = ArrayValues<typeof actionlintConfigNames>;
 
+/**
+ * ActionlintConfigMetadataByName actionlint config metadata by name contract.
+ */
 export const actionlintConfigMetadataByName: Readonly<
     Record<ActionlintConfigName, ActionlintConfigMetadata>
 > = {
@@ -46,6 +58,10 @@ export const actionlintConfigMetadataByName: Readonly<
     },
 };
 
+/**
+ * ActionlintConfigNamesByReadmeOrder actionlint config names by readme order
+ * contract.
+ */
 export const actionlintConfigNamesByReadmeOrder: readonly ActionlintConfigName[] =
     [
         "recommended",
@@ -54,6 +70,9 @@ export const actionlintConfigNamesByReadmeOrder: readonly ActionlintConfigName[]
         "all",
     ];
 
+/**
+ * ActionlintConfigReferenceToName actionlint config reference to name contract.
+ */
 export const actionlintConfigReferenceToName = {
     "actionlint.configs.actionlintOnly": "actionlintOnly",
     "actionlint.configs.all": "all",
@@ -63,9 +82,15 @@ export const actionlintConfigReferenceToName = {
     "actionlint.configs.workflows": "actionlintOnly",
 } as const;
 
+/**
+ * ActionlintConfigReference actionlint config reference contract.
+ */
 export type ActionlintConfigReference =
     keyof typeof actionlintConfigReferenceToName;
 
+/**
+ * IsActionlintConfigReference is actionlint config reference contract.
+ */
 export const isActionlintConfigReference = (
     value: string
 ): value is ActionlintConfigReference =>

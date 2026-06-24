@@ -1,15 +1,89 @@
 # disallow-actionlint-unknown-config-properties
 
-disallow unknown top-level Actionlint config properties.
+Disallow unknown config properties keeps actionlint configuration files predictable when they are reviewed beside ESLint configuration.
 
-## Rule details
+> **Rule catalog ID:** R003
 
-This rule is part of `eslint-plugin-actionlint` and reports Actionlint bridge or config-authoring diagnostics through ESLint flat config.
+## Targeted pattern scope
+
+This rule targets GitHub Actions workflow and Actionlint configuration. Use it in repositories where ESLint is the central feedback surface for local development, CI, and editor diagnostics.
+
+### Matched patterns
+
+- Files matched by the bridge rule or the configuration preset that enables `actionlint/disallow-actionlint-unknown-config-properties`.
+- .github/actionlint.yml and related actionlint configuration documents.
+
+### Detection boundaries
+
+The rule does not reimplement the full Actionlint configuration language. It validates the bridge-facing behavior that ESLint can report reliably and leaves deeper domain checks to Actionlint.
+
+## What this rule reports
+
+The rule reports unknown or misspelled properties in actionlint configuration objects before they silently drift from the upstream schema.
+
+## Why this rule exists
+
+Bridge plugins are useful only when they preserve upstream behavior and keep configuration reviewable. This rule keeps actionlint feedback close to ESLint without forcing users to copy an entire upstream config into ESLint options.
+
+## ❌ Incorrect
+
+```yaml
+.github/actionlint.yml
+extra-setting: true
+```
+
+## ✅ Correct
+
+```yaml
+.github/actionlint.yml
+rules: {}
+```
+
+## Behavior and migration notes
+
+Start with the recommended preset when adopting the plugin. Move project-specific actionlint options into the upstream config file and keep ESLint options limited to file selection, config path, and bridge behavior.
+
+## Additional examples
+
+```js
+import actionlint from "eslint-plugin-actionlint";
+
+export default [
+ actionlint.configs.recommended,
+ {
+  rules: {
+   "actionlint/disallow-actionlint-unknown-config-properties": "error",
+  },
+ },
+];
+```
 
 ## ESLint flat config example
 
-```ts
+```js
 import actionlint from "eslint-plugin-actionlint";
 
-export default [...actionlint.configs.recommended];
+export default [actionlint.configs.recommended];
 ```
+
+## When not to use it
+
+Do not enable this rule when Actionlint is intentionally run outside ESLint and duplicate editor or CI diagnostics would slow the project down.
+
+## Package documentation
+
+eslint-plugin-actionlint package documentation:
+
+- [Plugin README](https://github.com/Nick2bad4u/eslint-plugin-actionlint#readme)
+- [Rule source](https://github.com/Nick2bad4u/eslint-plugin-actionlint/tree/main/src/rules)
+
+## Further reading
+
+- [Actionlint documentation](https://github.com/rhysd/actionlint)
+- [ESLint flat config documentation](https://eslint.org/docs/latest/use/configure/configuration-files)
+
+## Adoption resources
+
+- Enable the recommended preset first.
+- Keep upstream configuration in `.github/actionlint.yml` unless a rule option explicitly asks for a different file.
+- Run `npm run lint:remark` before publishing docs changes so heading drift is caught locally.

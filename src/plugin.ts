@@ -10,6 +10,9 @@ import {
 } from "./_internal/actionlint-config-references.js";
 import { actionlintRules } from "./_internal/rules-registry.js";
 
+/**
+ * ActionlintConfigName actionlint config name contract.
+ */
 export type ActionlintConfigName = InternalActionlintConfigName;
 
 const pluginName = "eslint-plugin-actionlint" as const;
@@ -20,9 +23,21 @@ const configFiles = [
     "**/ActionLintConfig.{yml,yaml}",
 ] as const;
 
+/**
+ * ActionlintConfig actionlint config contract.
+ */
 export type ActionlintConfig = Linter.Config | readonly Linter.Config[];
+/**
+ * ActionlintConfigs actionlint configs contract.
+ */
 export type ActionlintConfigs = Record<ActionlintConfigName, ActionlintConfig>;
+/**
+ * ActionlintRuleId actionlint rule id contract.
+ */
 export type ActionlintRuleId = `actionlint/${ActionlintRuleName}`;
+/**
+ * ActionlintRuleName actionlint rule name contract.
+ */
 export type ActionlintRuleName = keyof typeof actionlintRules;
 type FlatConfigRules = NonNullable<Linter.Config["rules"]>;
 
@@ -30,6 +45,9 @@ const eslintPluginRules: typeof actionlintRules = actionlintRules;
 const version =
     typeof packageJson.version === "string" ? packageJson.version : "0.0.0";
 
+/**
+ * ESLint plugin object exported by `eslint-plugin-actionlint`.
+ */
 const actionlintPlugin: {
     configs: ActionlintConfigs;
     meta: { name: string; namespace: string; version: string };
@@ -109,5 +127,8 @@ actionlintPlugin.configs = {
     workflows: actionlintOnlyPreset,
 };
 
+/**
+ * ActionlintPlugin actionlint plugin contract.
+ */
 export type ActionlintPlugin = typeof actionlintPlugin;
 export default actionlintPlugin;

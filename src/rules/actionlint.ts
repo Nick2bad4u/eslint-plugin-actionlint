@@ -40,6 +40,12 @@ const toEslintLoc = (
     },
 });
 
+/**
+ * ActionlintRule ESLint rule contract.
+ */
+/**
+ * ActionlintRule ESLint bridge rule contract.
+ */
 const actionlintRule: RuleModuleWithDocs<MessageIds, Options> = createTypedRule<
     MessageIds,
     Options
@@ -47,28 +53,29 @@ const actionlintRule: RuleModuleWithDocs<MessageIds, Options> = createTypedRule<
     create: (context, [rawOptions = {}]) =>
         toRuleListener({
             Program() {
+                const lintOptions = {
+                    code: context.sourceCode.text,
+                    codeFilename: context.physicalFilename,
+                    cwd: context.cwd,
+                    ...(isDefined(rawOptions.configFile) && {
+                        configFile: rawOptions.configFile,
+                    }),
+                    ...(isDefined(rawOptions.ignore) && {
+                        ignore: rawOptions.ignore,
+                    }),
+                    ...(isDefined(rawOptions.pyflakes) && {
+                        pyflakes: rawOptions.pyflakes,
+                    }),
+                    ...(isDefined(rawOptions.shellcheck) && {
+                        shellcheck: rawOptions.shellcheck,
+                    }),
+                    ...(isDefined(rawOptions.timeoutMs) && {
+                        timeoutMs: rawOptions.timeoutMs,
+                    }),
+                };
                 let lintResult: ReturnType<typeof runActionlintSynchronously>;
                 try {
-                    lintResult = runActionlintSynchronously({
-                        code: context.sourceCode.text,
-                        codeFilename: context.physicalFilename,
-                        cwd: context.cwd,
-                        ...(isDefined(rawOptions.configFile) && {
-                            configFile: rawOptions.configFile,
-                        }),
-                        ...(isDefined(rawOptions.ignore) && {
-                            ignore: rawOptions.ignore,
-                        }),
-                        ...(isDefined(rawOptions.pyflakes) && {
-                            pyflakes: rawOptions.pyflakes,
-                        }),
-                        ...(isDefined(rawOptions.shellcheck) && {
-                            shellcheck: rawOptions.shellcheck,
-                        }),
-                        ...(isDefined(rawOptions.timeoutMs) && {
-                            timeoutMs: rawOptions.timeoutMs,
-                        }),
-                    });
+                    lintResult = runActionlintSynchronously(lintOptions);
                 } catch (error: unknown) {
                     context.report({
                         data: {
@@ -106,7 +113,7 @@ const actionlintRule: RuleModuleWithDocs<MessageIds, Options> = createTypedRule<
                 "actionlint.configs.all",
             ],
             description:
-                "run Actionlint against GitHub Actions workflow files from ESLint.",
+                "require Actionlint diagnostics for GitHub Actions workflow files from ESLint.",
             recommended: true,
             requiresTypeChecking: false,
             url: "https://nick2bad4u.github.io/eslint-plugin-actionlint/docs/rules/actionlint",
@@ -116,7 +123,14 @@ const actionlintRule: RuleModuleWithDocs<MessageIds, Options> = createTypedRule<
                 "Actionlint configuration error: {{message}}",
             actionlintProblem: "Actionlint ({{rule}}): {{text}}",
         },
-        schema: [{ additionalProperties: true, type: "object" }],
+        schema: [
+            {
+                additionalProperties: true,
+                description:
+                    "Options forwarded to the underlying bridge linter for this ESLint rule.",
+                type: "object",
+            },
+        ],
         type: "problem",
     },
     name: "actionlint",

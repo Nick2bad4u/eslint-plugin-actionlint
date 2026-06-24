@@ -2,6 +2,9 @@ import type { RuleModuleWithDocs } from "../_internal/typed-rule.js";
 
 import { createNoEmptyStringRule } from "../_internal/config-rule-factories.js";
 
+/**
+ * DisallowActionlintEmptyIgnorePatternsRule ESLint rule contract.
+ */
 const disallowActionlintEmptyIgnorePatternsRule: RuleModuleWithDocs<
     "configProblem",
     readonly []

@@ -7,6 +7,9 @@ import type { ActionlintConfigReference } from "./actionlint-config-references.j
 
 import { createRuleDocsUrl } from "./rule-docs-url.js";
 
+/**
+ * ActionlintRuleDocs actionlint rule docs contract.
+ */
 export type ActionlintRuleDocs = Readonly<{
     configs: ActionlintConfigReference | readonly ActionlintConfigReference[];
     description: string;
@@ -16,15 +19,24 @@ export type ActionlintRuleDocs = Readonly<{
     url: string;
 }>;
 
+/**
+ * GenericRuleContext generic rule context contract.
+ */
 export type GenericRuleContext<
     MessageIds extends string,
     Options extends Readonly<UnknownArray>,
 > = Readonly<TSESLint.RuleContext<MessageIds, Options>>;
 
+/**
+ * GenericRuleListener generic rule listener contract.
+ */
 export type GenericRuleListener = Readonly<
     Record<string, (node: unknown) => void>
 >;
 
+/**
+ * RuleDefinitionWithDocs rule definition with docs contract.
+ */
 export type RuleDefinitionWithDocs<
     MessageIds extends string,
     Options extends Readonly<UnknownArray>,
@@ -36,6 +48,9 @@ export type RuleDefinitionWithDocs<
     meta: RuleModuleWithDocs<MessageIds, Options>["meta"];
 };
 
+/**
+ * RuleModuleWithDocs rule module with docs contract.
+ */
 export type RuleModuleWithDocs<
     MessageIds extends string,
     Options extends Readonly<UnknownArray>,
@@ -97,6 +112,9 @@ const getMergedRuleOptions = <Options extends Readonly<UnknownArray>>(
           )
         : configuredOptions;
 
+/**
+ * CreateTypedRule create typed rule contract.
+ */
 export const createTypedRule = <
     MessageIds extends string,
     Options extends Readonly<UnknownArray>,
@@ -120,6 +138,9 @@ export const createTypedRule = <
     };
 };
 
+/**
+ * ToRuleListener to rule listener contract.
+ */
 export const toRuleListener = (
     listener: GenericRuleListener
 ): TSESLint.RuleListener => listener;

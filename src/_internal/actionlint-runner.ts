@@ -1,9 +1,11 @@
+import type { UnknownRecord } from "type-fest";
+
 import {
     MessageChannel,
     receiveMessageOnPort,
     Worker,
 } from "node:worker_threads";
-import { assertDefined, isDefined, safeCastTo } from "ts-extras";
+import { assertDefined, isDefined, keyIn } from "ts-extras";
 
 import type {
     ActionlintWorkerResponse,
@@ -14,7 +16,7 @@ import type {
 const WAIT_TIMEOUT_IN_MILLISECONDS = 30_000 as const;
 const WORKER_DONE_STATE = 1 as const;
 const lintResultCache = new Map<string, SerializableActionlintResult>();
-let actionlintWorker: null | Worker = null;
+const workerState: { current: null | Worker } = { current: null };
 const isUsesTypeScriptSourceWorker = import.meta.url.endsWith(".ts");
 const workerModuleUrl = new URL(
     isUsesTypeScriptSourceWorker
@@ -22,6 +24,12 @@ const workerModuleUrl = new URL(
         : "./actionlint-worker.js",
     import.meta.url
 );
+
+const isUnknownRecord = (value: unknown): value is UnknownRecord =>
+    typeof value === "object" && value !== null;
+
+const isWorkerResponse = (value: unknown): value is ActionlintWorkerResponse =>
+    isUnknownRecord(value) && (value["ok"] === true || value["ok"] === false);
 
 const createWorker = (): Worker =>
     new Worker(workerModuleUrl, {
@@ -32,28 +40,30 @@ const createWorker = (): Worker =>
     });
 
 const resetWorker = (): void => {
-    const workerToTerminate = actionlintWorker;
+    const workerToTerminate = workerState.current;
     if (workerToTerminate === null) return;
     void (async () => {
         try {
             await workerToTerminate.terminate();
-        } catch {}
+        } catch {
+            // Worker termination failures are not actionable during cache recovery.
+        }
     })();
-    actionlintWorker = null;
+    workerState.current = null;
 };
 
 const getWorker = (): Worker => {
-    if (actionlintWorker === null) {
-        actionlintWorker = createWorker();
-        actionlintWorker.unref();
-        actionlintWorker.once("error", () => {
-            actionlintWorker = null;
+    if (workerState.current === null) {
+        workerState.current = createWorker();
+        workerState.current.unref();
+        workerState.current.once("error", () => {
+            workerState.current = null;
         });
-        actionlintWorker.once("exit", () => {
-            actionlintWorker = null;
+        workerState.current.once("exit", () => {
+            workerState.current = null;
         });
     }
-    return actionlintWorker;
+    return workerState.current;
 };
 
 const readWorkerResponse = (
@@ -62,11 +72,18 @@ const readWorkerResponse = (
     assertDefined(response);
     if (response.ok) return response.result;
     const error = new Error(response.error.message);
-    error.name = response.error.name;
-    if (isDefined(response.error.stack)) error.stack = response.error.stack;
+    Object.defineProperty(error, "name", { value: response.error.name });
+    if (isDefined(response.error.stack)) {
+        Object.defineProperty(error, "stack", {
+            value: response.error.stack,
+        });
+    }
     throw error;
 };
 
+/**
+ * RunActionlintSynchronously run Actionlint synchronously contract.
+ */
 export const runActionlintSynchronously = (
     options: SerializableActionlintLintOptions
 ): SerializableActionlintResult => {
@@ -77,12 +94,13 @@ export const runActionlintSynchronously = (
     const signalBuffer = new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT);
     const signal = new Int32Array(signalBuffer);
     const { port1, port2 } = new MessageChannel();
+    // eslint-disable-next-line sdl/no-postmessage-without-origin-allowlist -- Node worker_threads postMessage accepts a transfer list, not a browser targetOrigin.
     worker.postMessage({ options, port: port2, signalBuffer }, [port2]);
     const waitResult = Atomics.wait(
         signal,
         0,
         0,
-        "timeoutMs" in options && typeof options.timeoutMs === "number"
+        keyIn(options, "timeoutMs") && typeof options.timeoutMs === "number"
             ? options.timeoutMs
             : WAIT_TIMEOUT_IN_MILLISECONDS
     );
@@ -99,8 +117,9 @@ export const runActionlintSynchronously = (
     }
     const workerMessage = receiveMessageOnPort(port1);
     port1.close();
+    const rawWorkerMessage: unknown = workerMessage?.message;
     const result = readWorkerResponse(
-        safeCastTo<ActionlintWorkerResponse | undefined>(workerMessage?.message)
+        isWorkerResponse(rawWorkerMessage) ? rawWorkerMessage : undefined
     );
     lintResultCache.set(cacheKey, result);
     return result;

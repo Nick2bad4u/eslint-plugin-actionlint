@@ -22,6 +22,9 @@ type ActionlintRulesRegistry = Readonly<{
     "sort-actionlint-config-arrays": typeof sortActionlintConfigArraysRule;
 }>;
 
+/**
+ * ActionlintRules actionlint rules contract.
+ */
 export const actionlintRules: ActionlintRulesRegistry = {
     actionlint: actionlintRule,
     "disallow-actionlint-empty-ignore-patterns":
@@ -40,6 +43,9 @@ export const actionlintRules: ActionlintRulesRegistry = {
     "sort-actionlint-config-arrays": sortActionlintConfigArraysRule,
 } as const satisfies ActionlintRulesRegistry;
 
+/**
+ * ActionlintRuleNamePattern actionlint rule name pattern contract.
+ */
 export type ActionlintRuleNamePattern = keyof typeof actionlintRules;
 
 export default actionlintRules;
