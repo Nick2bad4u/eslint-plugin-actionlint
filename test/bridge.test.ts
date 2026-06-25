@@ -2,11 +2,15 @@ import { ESLint, type Linter } from "eslint";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import * as path from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 import actionlintPlugin from "../src/plugin";
 
 const bridgeConfig = actionlintPlugin.configs.actionlintOnly as Linter.Config;
+const fixturesDirectory = fileURLToPath(
+    new URL("fixtures/bridge/", import.meta.url)
+);
 const invalidWorkflowText = [
     "name: test",
     "on: [push]",
@@ -42,9 +46,11 @@ const usingTemporaryDirectory = async <Result>(
     }
 };
 const createEngine = (
-    ruleOptions: Readonly<Record<string, unknown>> = {}
+    ruleOptions: Readonly<Record<string, unknown>> = {},
+    cwd?: string
 ): ESLint =>
     new ESLint({
+        ...(cwd !== undefined && { cwd }),
         overrideConfig: [
             {
                 ...bridgeConfig,
@@ -71,6 +77,39 @@ describe("actionlint bridge rule", () => {
         });
 
         expect(result?.messages).toHaveLength(0);
+    }, 30_000);
+
+    it("lints workflow fixture files from disk with forwarded options", async () => {
+        expect.assertions(3);
+
+        const eslint = createEngine(
+            {
+                configFile: path.join(
+                    fixturesDirectory,
+                    "ActionLintConfig.yaml"
+                ),
+                ignore: [],
+                pyflakes: false,
+                shellcheck: false,
+                timeoutMs: 30_000,
+            },
+            fixturesDirectory
+        );
+        const results = await eslint.lintFiles([
+            ".github/workflows/invalid.yml",
+            ".github/workflows/valid.yml",
+        ]);
+        const messagesByBasename = new Map(
+            results.map((result) => [
+                path.basename(result.filePath),
+                result.messages,
+            ])
+        );
+        const invalidMessages = messagesByBasename.get("invalid.yml") ?? [];
+
+        expect(messagesByBasename.get("valid.yml")).toHaveLength(0);
+        expect(invalidMessages.length).toBeGreaterThan(0);
+        expect(invalidMessages[0]?.ruleId).toBe("actionlint/actionlint");
     }, 30_000);
 
     it("reports Actionlint diagnostics through ESLint", async () => {
