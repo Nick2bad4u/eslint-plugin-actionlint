@@ -12,6 +12,7 @@
         sans-serif;
     --sb-accent-overview: #22c55e;
     --sb-accent-started: #0ea5e9;
+    --sb-accent-guides: #6366f1;
     --sb-accent-developer: #8b5cf6;
     --sb-accent-rules: #f97316;
     --sb-accent-presets: #eab308;
@@ -81,6 +82,10 @@
     border-inline-start-color: var(--sb-accent-started);
 }
 
+.sb-cat-guides > .menu__list-item-collapsible .menu__link {
+    border-inline-start-color: var(--sb-accent-guides);
+}
+
 .sb-cat-developer > .menu__list-item-collapsible .menu__link {
     border-inline-start-color: var(--sb-accent-developer);
 }
@@ -119,6 +124,40 @@
 .sb-cat-presets .sb-preset-all > .menu__link,
 .sb-cat-presets .menu__link.sb-preset-all {
     border-inline-start-color: var(--sb-preset-all);
+}
+
+.sb-cat-rules
+    .theme-doc-sidebar-item-link-level-2:nth-child(6n + 1)
+    > .menu__link {
+    border-inline-start-color: #22c55e;
+}
+
+.sb-cat-rules
+    .theme-doc-sidebar-item-link-level-2:nth-child(6n + 2)
+    > .menu__link {
+    border-inline-start-color: #0ea5e9;
+}
+
+.sb-cat-rules
+    .theme-doc-sidebar-item-link-level-2:nth-child(6n + 3)
+    > .menu__link {
+    border-inline-start-color: #8b5cf6;
+}
+
+.sb-cat-rules
+    .theme-doc-sidebar-item-link-level-2:nth-child(6n + 4)
+    > .menu__link {
+    border-inline-start-color: #f97316;
+}
+
+.sb-cat-rules
+    .theme-doc-sidebar-item-link-level-2:nth-child(6n + 5)
+    > .menu__link {
+    border-inline-start-color: #eab308;
+}
+
+.sb-cat-rules .theme-doc-sidebar-item-link-level-2:nth-child(6n) > .menu__link {
+    border-inline-start-color: #f43f5e;
 }
 
 .sb-inline-rule-number,

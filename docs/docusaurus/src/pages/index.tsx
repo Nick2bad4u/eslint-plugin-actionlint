@@ -21,7 +21,10 @@ interface HeroStat {
 }
 
 interface HomeCard {
+    readonly actionLabel: string;
+    readonly bullets: readonly string[];
     readonly description: string;
+    readonly icon: string;
     readonly title: string;
     readonly to: string;
 }
@@ -81,20 +84,41 @@ const homepageSocialImageUrl = `https://nick2bad4u.github.io/${packageName}/img/
 
 const homeCards = [
     {
+        actionLabel: "Start setup",
+        bullets: [
+            "Add the flat-config preset",
+            "Target workflow YAML",
+            "Keep upstream options upstream",
+        ],
         description:
             "Install the plugin, enable a preset, and pass through only the upstream options you need.",
+        icon: "✅",
         title: "Get Started",
         to: "/docs/rules/getting-started",
     },
     {
+        actionLabel: "Compare presets",
+        bullets: [
+            "🟡 Recommended rollout",
+            "🧪 Workflow bridge only",
+            "🔧 Config policy only",
+        ],
         description:
             "Compare recommended, Actionlint-only, configuration, and all presets.",
+        icon: "🛠️",
         title: "Presets",
         to: "/docs/rules/presets",
     },
     {
+        actionLabel: "Browse rules",
+        bullets: [
+            "Bridge diagnostics",
+            "Config shape checks",
+            "Workflow policy guardrails",
+        ],
         description:
             "Browse the bridge rule and config-authoring rules with concrete examples.",
+        icon: "📜",
         title: "Rule Reference",
         to: "/docs/rules",
     },
@@ -205,14 +229,30 @@ export default function Home(): JSX.Element {
                     <div className={styles.cardGrid}>
                         {homeCards.map((card) => (
                             <article className={styles.card} key={card.title}>
-                                <Heading as="h2" className={styles.cardTitle}>
-                                    {card.title}
-                                </Heading>
+                                <div className={styles.cardHeader}>
+                                    <span
+                                        aria-hidden="true"
+                                        className={styles.cardIcon}
+                                    >
+                                        {card.icon}
+                                    </span>
+                                    <Heading
+                                        as="h2"
+                                        className={styles.cardTitle}
+                                    >
+                                        {card.title}
+                                    </Heading>
+                                </div>
                                 <p className={styles.cardDescription}>
                                     {card.description}
                                 </p>
+                                <ul className={styles.cardBullets}>
+                                    {card.bullets.map((bullet) => (
+                                        <li key={bullet}>{bullet}</li>
+                                    ))}
+                                </ul>
                                 <Link className={styles.cardLink} to={card.to}>
-                                    Open section
+                                    {card.actionLabel}
                                 </Link>
                             </article>
                         ))}

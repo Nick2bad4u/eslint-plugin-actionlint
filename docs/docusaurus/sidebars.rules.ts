@@ -16,6 +16,7 @@ const sidebars = {
                 "guides/getting-started",
                 "guides/actionlint-bridge",
                 "guides/config-authoring",
+                "guides/tool-to-rule-map",
                 "guides/faq",
             ],
             label: "📚 Guides",

@@ -1,22 +1,22 @@
 ---
-name: "Copilot-Instructions-ESLint-Remark-Plugin"
-description: "Instructions for maintaining eslint-plugin-remark."
+name: "Copilot-Instructions-ESLint-Actionlint-Plugin"
+description: "Instructions for maintaining eslint-plugin-actionlint."
 applyTo: "**"
 ---
 
-# eslint-plugin-remark Instructions
+# eslint-plugin-actionlint Instructions
 
 ## Project Role
 
-This repository is `eslint-plugin-remark`: an ESLint Flat Config plugin that runs Remark through ESLint and provides Remark config-authoring rules for `remark.config.*` and `.remarkrc.*` files.
+This repository is `eslint-plugin-actionlint`: an ESLint Flat Config plugin that runs Actionlint through ESLint and provides Actionlint config-authoring rules for `.github/actionlint.*` files.
 
 ## Engineering Priorities
 
 - Preserve the modern TypeScript, ESLint, Vitest, Docusaurus, package-validation, and sync-script infrastructure.
 - Keep rule metadata, docs, tests, README tables, and preset matrices synchronized.
 - Prefer surgical edits over replacing mature config or docs infrastructure.
-- Do not reintroduce copied Stylelint rule content as filler.
-- Do not invent new rules unless the user explicitly requests them or they are clearly part of the Remark migration task.
+- Do not reintroduce copied Remark or Stylelint content as filler.
+- Do not invent new rules unless the user explicitly requests them or they are clearly part of Actionlint bridge/config policy work.
 
 ## Rule Implementation Standards
 
@@ -27,12 +27,12 @@ This repository is `eslint-plugin-remark`: an ESLint Flat Config plugin that run
 - Every rule needs static metadata, actionable messages, schema, docs URL, tests, and a matching docs page.
 - Autofix when the transformation is deterministic and safe; otherwise report only or provide suggestions.
 
-## Remark Bridge Constraints
+## Actionlint Bridge Constraints
 
-- The `remark/remark` rule runs on the root node from the plugin's internal full-document Markdown parser so the public presets stay compatible with both ESLint 9 and ESLint 10.
-- Keep Remark execution isolated in the worker-backed bridge so ESLint rule execution remains synchronous.
-- Treat Remark config loading as a runtime boundary: validate unknown config values and fail gracefully with ESLint diagnostics.
-- Resolve string plugin specifiers relative to the Remark config file.
+- The `actionlint/actionlint` rule delegates GitHub Actions workflow analysis to upstream Actionlint.
+- Keep Actionlint execution isolated in the worker-backed bridge so ESLint rule execution remains synchronous.
+- Treat Actionlint config loading as a runtime boundary and fail gracefully with ESLint diagnostics.
+- Keep Actionlint-specific workflow policy in Actionlint config; use ESLint rules for repository conventions around that config file.
 
 ## Verification
 

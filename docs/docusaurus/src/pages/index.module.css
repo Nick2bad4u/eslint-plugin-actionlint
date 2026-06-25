@@ -107,9 +107,21 @@
     color: #ffffff;
 }
 
+.heroActionPrimary:hover,
+.heroActionPrimary:focus,
+.heroActionPrimary:visited {
+    color: #ffffff;
+}
+
 .heroActionSecondary {
     border-color: rgb(191 219 254 / 34%);
     background: rgb(15 23 42 / 30%);
+    color: rgb(238 246 255);
+}
+
+.heroActionSecondary:hover,
+.heroActionSecondary:focus,
+.heroActionSecondary:visited {
     color: rgb(238 246 255);
 }
 
@@ -201,14 +213,49 @@
     transform: translateY(-2px);
 }
 
+.cardHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    margin-block-end: 0.5rem;
+}
+
+.cardIcon {
+    display: inline-grid;
+    flex: 0 0 auto;
+    place-items: center;
+    block-size: 2.1rem;
+    inline-size: 2.1rem;
+    border: 1px solid rgb(37 99 235 / 20%);
+    border-radius: 0.5rem;
+    background: rgb(37 99 235 / 10%);
+    color: #1d4ed8;
+    font-family:
+        "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
+    font-size: 1.12rem;
+}
+
 .cardTitle {
-    margin: 0 0 0.46rem;
+    margin: 0;
     font-size: 1.125rem;
+    line-height: 1.25;
 }
 
 .cardDescription {
     color: var(--ifm-color-emphasis-800);
-    margin-block-end: 0.8rem;
+    margin-block-end: 0.72rem;
+}
+
+.cardBullets {
+    padding-inline-start: 1.18rem;
+    margin: 0 0 0.9rem;
+    color: var(--ifm-color-emphasis-800);
+    font-size: 0.89rem;
+    line-height: 1.48;
+}
+
+.cardBullets li + li {
+    margin-block-start: 0.2rem;
 }
 
 .cardLink {
