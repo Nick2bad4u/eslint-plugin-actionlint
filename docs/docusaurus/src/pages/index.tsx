@@ -177,11 +177,6 @@ export default function Home(): JSX.Element {
                                 src={logoSrc}
                                 width="240"
                             />
-                            <div className={styles.heroPanelDetails}>
-                                <span>.github/actionlint.yml</span>
-                                <span>actionlint/actionlint</span>
-                                <span>actionlintOnly</span>
-                            </div>
                         </aside>
                     </div>
 

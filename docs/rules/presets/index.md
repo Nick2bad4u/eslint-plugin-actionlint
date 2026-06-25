@@ -1,6 +1,18 @@
 # Presets
 
-This preset is exported by the plugin.
+`eslint-plugin-actionlint` exposes focused flat-config presets for GitHub Actions workflow linting and Actionlint config authoring.
+
+- `🟡` [`actionlint.configs.recommended`](./recommended.md) — default rollout path for workflow diagnostics plus common config hygiene.
+- `🧪` [`actionlint.configs.actionlintOnly`](./actionlint-only.md) — bridge-only workflow linting.
+- `🔧` [`actionlint.configs.configuration`](./configuration.md) — config-authoring rules without workflow linting.
+- `🟣` [`actionlint.configs.all`](./all.md) — every current bridge and config-authoring rule.
+
+Legacy aliases remain available for compatibility:
+
+- `actionlint.configs.workflows` → `actionlint.configs.actionlintOnly`
+- `actionlint.configs.configs` → `actionlint.configs.configuration`
+
+Use the preset pages in this section for copy/paste config snippets and rollout notes.
 
 ## Rule matrix
 
