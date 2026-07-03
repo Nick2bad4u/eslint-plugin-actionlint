@@ -41,6 +41,18 @@ const config = [
             "untyped-third-party-modules.d.ts",
         ],
     },
+    {
+        files: ["docs/docusaurus/src/js/modern-enhancements.ts"],
+        rules: {
+            "unicorn/prefer-observer-apis": "off",
+        },
+    },
+    {
+        files: ["src/rules/**/*.ts"],
+        rules: {
+            "unicorn/consistent-boolean-name": "off",
+        },
+    },
     { ...localConfigurationPreset, name: "Local Actionlint config rules" },
 ];
 

@@ -1,4 +1,6 @@
-import { isDefined } from "ts-extras";
+import type { UnknownRecord } from "type-fest";
+
+import { isDefined, keyIn } from "ts-extras";
 
 import { runActionlintSynchronously } from "../_internal/actionlint-runner.js";
 import {
@@ -22,6 +24,9 @@ type ReportLocation = Readonly<{
     start: { column: number; line: number };
 }>;
 
+const isUnknownRecord = (value: unknown): value is UnknownRecord =>
+    typeof value === "object" && value !== null;
+
 const toEslintLoc = (
     message: Readonly<{
         column: number;
@@ -39,6 +44,11 @@ const toEslintLoc = (
         line: message.line,
     },
 });
+
+const isErrorLike = (value: unknown): value is Readonly<{ message: string }> =>
+    isUnknownRecord(value) &&
+    keyIn(value, "message") &&
+    typeof value["message"] === "string";
 
 /**
  * ActionlintRule ESLint rule contract.
@@ -79,10 +89,9 @@ const actionlintRule: RuleModuleWithDocs<MessageIds, Options> = createTypedRule<
                 } catch (error: unknown) {
                     context.report({
                         data: {
-                            message:
-                                error instanceof Error
-                                    ? error.message
-                                    : String(error),
+                            message: isErrorLike(error)
+                                ? error.message
+                                : String(error),
                         },
                         loc: {
                             end: { column: 0, line: 1 },

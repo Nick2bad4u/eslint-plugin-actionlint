@@ -21,8 +21,7 @@ export type ActionlintWorkerRequest = Readonly<{
  * ActionlintWorkerResponse actionlint worker response contract.
  */
 export type ActionlintWorkerResponse =
-    | ActionlintWorkerErrorResponse
-    | ActionlintWorkerSuccessResponse;
+    ActionlintWorkerErrorResponse | ActionlintWorkerSuccessResponse;
 
 /**
  * ActionlintWorkerSuccessResponse actionlint worker success response contract.

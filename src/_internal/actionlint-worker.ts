@@ -1,4 +1,4 @@
-import type { JsonObject } from "type-fest";
+import type { JsonObject, UnknownRecord } from "type-fest";
 
 import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -6,7 +6,7 @@ import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import * as path from "node:path";
 import { isMainThread, parentPort } from "node:worker_threads";
-import { isDefined, stringSplit } from "ts-extras";
+import { isDefined, keyIn, stringSplit } from "ts-extras";
 
 import type {
     ActionlintWorkerRequest,
@@ -27,6 +27,16 @@ type JsonRecord = Readonly<JsonObject>;
 
 const isJsonRecord = (value: unknown): value is JsonRecord =>
     typeof value === "object" && value !== null;
+
+const isUnknownRecord = (value: unknown): value is UnknownRecord =>
+    typeof value === "object" && value !== null;
+
+const isErrorLike = (
+    value: unknown
+): value is Readonly<{ message: string; name?: string; stack?: string }> =>
+    isUnknownRecord(value) &&
+    keyIn(value, "message") &&
+    typeof value["message"] === "string";
 
 const toJsonRecord = (value: unknown): JsonRecord =>
     isJsonRecord(value) ? value : {};
@@ -51,8 +61,8 @@ const toSpawnArguments = (
     if (options.pyflakes === false) args.push("-pyflakes", "");
     else if (typeof options.pyflakes === "string")
         args.push("-pyflakes", options.pyflakes);
-    const ignorePatterns = options.ignore ?? [];
-    for (const pattern of ignorePatterns) args.push("-ignore", pattern);
+    const ignoredPathPatterns = options.ignore ?? [];
+    for (const pattern of ignoredPathPatterns) args.push("-ignore", pattern);
     args.push(temporaryFilePath);
     return args;
 };
@@ -172,17 +182,16 @@ const handleRequest = (request: ActionlintWorkerRequest): void => {
     try {
         notifyCompletion(request, { ok: true, result: runActionlint(request) });
     } catch (error: unknown) {
-        const normalizedError =
-            error instanceof Error
-                ? {
-                      message: error.message,
-                      name: error.name,
-                      ...(isDefined(error.stack) && { stack: error.stack }),
-                  }
-                : {
-                      message: `Unknown Actionlint worker failure: ${String(error)}`,
-                      name: "ActionlintWorkerError",
-                  };
+        const normalizedError = isErrorLike(error)
+            ? {
+                  message: error.message,
+                  name: error.name ?? "ActionlintWorkerError",
+                  ...(isDefined(error.stack) && { stack: error.stack }),
+              }
+            : {
+                  message: `Unknown Actionlint worker failure: ${String(error)}`,
+                  name: "ActionlintWorkerError",
+              };
         notifyCompletion(request, { error: normalizedError, ok: false });
     }
 };
