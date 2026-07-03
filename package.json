@@ -1,7 +1,7 @@
 {
     "$schema": "https://www.schemastore.org/package.json",
     "name": "eslint-plugin-actionlint",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "private": false,
     "description": "ESLint plugin that runs Actionlint through ESLint and adds Actionlint config-authoring rules.",
     "keywords": [
