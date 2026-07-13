@@ -12,10 +12,8 @@
     "gitRevision": "main",
     "hostedBaseUrl": "https://nick2bad4u.github.io/eslint-plugin-actionlint/",
     "json": "docs/typedoc.json",
-    "logLevel": "Info",
     "name": "eslint-plugin-actionlint Documentation",
     "out": "site-docs/developer/api",
-    "readme": "none",
     "tsconfig": "tsconfig.typedoc.json",
     "warnOnUnstableDtLink": false
 }
