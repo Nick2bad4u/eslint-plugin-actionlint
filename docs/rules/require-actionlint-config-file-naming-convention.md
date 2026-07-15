@@ -11,7 +11,7 @@ This rule targets GitHub Actions workflow and Actionlint configuration. Use it i
 ### Matched patterns
 
 - Files matched by the bridge rule or the configuration preset that enables `actionlint/require-actionlint-config-file-naming-convention`.
-- .github/actionlint.yml and related actionlint configuration documents.
+- `.github/actionlint.yml`, `.github/actionlint.yaml`, and legacy root-level Actionlint configuration names that need migration.
 
 ### Detection boundaries
 
@@ -19,7 +19,7 @@ The rule does not reimplement the full Actionlint configuration language. It val
 
 ## What this rule reports
 
-The rule reports .github/actionlint.yml alternatives that do not match the conventional file names supported by this bridge.
+The rule reports Actionlint configuration files unless they are named `.github/actionlint.yml` or `.github/actionlint.yaml`. Root-level `actionlint.yml`, `actionlint.yaml`, `ActionLintConfig.yml`, and `ActionLintConfig.yaml` files are legacy inputs and are not valid locations.
 
 ## Why this rule exists
 
@@ -35,7 +35,7 @@ export default [{
   }
 }];
 
-// config file present: actionlint.config.yaml
+// legacy config file present: ActionLintConfig.yaml
 ```
 
 ## ✅ Correct

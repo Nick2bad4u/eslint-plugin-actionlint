@@ -1,5 +1,5 @@
 import { ESLint, type Linter } from "eslint";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -86,7 +86,7 @@ describe("actionlint bridge rule", () => {
             {
                 configFile: path.join(
                     fixturesDirectory,
-                    "ActionLintConfig.yaml"
+                    ".github/actionlint.yaml"
                 ),
                 ignore: [],
                 pyflakes: false,
@@ -120,8 +120,9 @@ describe("actionlint bridge rule", () => {
             async (temporaryDirectory) => {
                 const configPath = path.join(
                     temporaryDirectory,
-                    "ActionLintConfig.yaml"
+                    ".github/actionlint.yaml"
                 );
+                mkdirSync(path.dirname(configPath), { recursive: true });
                 writeFileSync(configPath, "config-variables:\n  - NODE_ENV\n");
                 const eslint = createEngine({
                     configFile: configPath,

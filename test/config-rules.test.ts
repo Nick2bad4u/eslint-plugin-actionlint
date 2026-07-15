@@ -117,7 +117,36 @@ describe("actionlint config rules", () => {
         );
     });
 
-    it("accepts valid Actionlint config files", async () => {
+    it.each([".github/actionlint.yml", ".github/actionlint.yaml"])(
+        "accepts valid Actionlint config file %s",
+        async (filePath) => {
+            expect.assertions(1);
+
+            const eslint = createConfigRuleEngine();
+            const [result] = await eslint.lintText(
+                [
+                    "config-variables:",
+                    "  - NODE_ENV",
+                    "paths:",
+                    "  - .github/workflows/*.yml",
+                    "self-hosted-runner:",
+                    "  labels:",
+                    "    - linux",
+                    "",
+                ].join("\n"),
+                { filePath }
+            );
+
+            expect(result?.messages).toHaveLength(0);
+        }
+    );
+
+    it.each([
+        "ActionLintConfig.yml",
+        "ActionLintConfig.yaml",
+        "actionlint.yml",
+        "actionlint.yaml",
+    ])("rejects legacy Actionlint config file %s", async (filePath) => {
         expect.assertions(1);
 
         const eslint = createConfigRuleEngine();
@@ -132,9 +161,15 @@ describe("actionlint config rules", () => {
                 "    - linux",
                 "",
             ].join("\n"),
-            { filePath: ".github/actionlint.yaml" }
+            { filePath }
         );
 
-        expect(result?.messages).toHaveLength(0);
+        expect(result?.messages).toStrictEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    ruleId: "actionlint/require-actionlint-config-file-naming-convention",
+                }),
+            ])
+        );
     });
 });
