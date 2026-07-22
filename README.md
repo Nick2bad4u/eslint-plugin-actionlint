@@ -7,7 +7,7 @@
 ## Installation
 
 ```sh
-npm install --save-dev eslint-plugin-actionlint eslint github-actionlint yaml-eslint-parser
+npm install --save-dev eslint-plugin-actionlint eslint yaml-eslint-parser
 ```
 
 ### Compatibility

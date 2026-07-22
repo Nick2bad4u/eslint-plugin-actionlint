@@ -33,10 +33,10 @@ const isWorkerResponse = (value: unknown): value is ActionlintWorkerResponse =>
 
 const createWorker = (): Worker =>
     new Worker(workerModuleUrl, {
+        execArgv: isUsesTypeScriptSourceWorker
+            ? ["--experimental-strip-types"]
+            : [],
         name: "actionlint-eslint-bridge",
-        ...(isUsesTypeScriptSourceWorker && {
-            execArgv: ["--experimental-strip-types"],
-        }),
     });
 
 const resetWorker = (): void => {

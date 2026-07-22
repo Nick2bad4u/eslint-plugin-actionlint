@@ -6,6 +6,11 @@ const runnerEntryUrl = new URL(
     import.meta.url
 );
 const runnerEntry = runnerEntryUrl.href;
+const builtRunnerEntryUrl = new URL(
+    "../dist/_internal/actionlint-runner.js",
+    import.meta.url
+);
+const builtRunnerEntry = builtRunnerEntryUrl.href;
 const secretExpression = ["$", "{{ secrets.NOPE }}"].join("");
 const invalidWorkflowText = [
     "name: test",
@@ -35,6 +40,37 @@ describe("actionlint worker lifecycle", () => {
             process.execPath,
             [
                 "--experimental-strip-types",
+                "--input-type=module",
+                "--eval",
+                script,
+            ],
+            {
+                cwd: process.cwd(),
+                encoding: "utf8",
+                timeout: 20_000,
+                windowsHide: true,
+            }
+        );
+
+        expect(result.error).toBeUndefined();
+        expect(result.signal).toBeNull();
+    }, 30_000);
+
+    it("does not inherit eval-only flags in the packed worker", () => {
+        expect.assertions(2);
+
+        const script = `
+            import { runActionlintSynchronously } from ${JSON.stringify(builtRunnerEntry)};
+            runActionlintSynchronously({
+                code: ${JSON.stringify(invalidWorkflowText)},
+                codeFilename: ".github/workflows/test.yml",
+                cwd: process.cwd(),
+                shellcheck: false, pyflakes: false,
+            });
+        `;
+        const result = spawnSync(
+            process.execPath,
+            [
                 "--input-type=module",
                 "--eval",
                 script,

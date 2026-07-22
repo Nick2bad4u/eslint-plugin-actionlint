@@ -130,25 +130,25 @@ export function createConfigTextRule(
     definition: ConfigRuleDefinition
 ): RuleModuleWithDocs<MessageIds, Options> {
     return createTypedRule<MessageIds, Options>({
-        create: (context) =>
-            toRuleListener({
-                Program() {
-                    const message = definition.check(
-                        context.sourceCode.text,
-                        context.physicalFilename
-                    );
-                    if (typeof message !== "string") return;
-                    context.report({
-                        data: { message },
-                        loc: {
-                            end: { column: 0, line: 1 },
-                            start: { column: 0, line: 1 },
-                        },
-                        messageId: "configProblem",
-                        node: context.sourceCode.ast,
-                    });
-                },
-            }),
+        create: (context) => {
+            const checkProgram = (): void => {
+                const message = definition.check(
+                    context.sourceCode.text,
+                    context.physicalFilename
+                );
+                if (typeof message !== "string") return;
+                context.report({
+                    data: { message },
+                    loc: {
+                        end: { column: 0, line: 1 },
+                        start: { column: 0, line: 1 },
+                    },
+                    messageId: "configProblem",
+                    node: context.sourceCode.ast,
+                });
+            };
+            return toRuleListener({ Program: checkProgram });
+        },
         meta: {
             defaultOptions: [],
             deprecated: false,

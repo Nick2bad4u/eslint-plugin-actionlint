@@ -51,9 +51,6 @@ const isErrorLike = (value: unknown): value is Readonly<{ message: string }> =>
     typeof value["message"] === "string";
 
 /**
- * ActionlintRule ESLint rule contract.
- */
-/**
  * ActionlintRule ESLint bridge rule contract.
  */
 const actionlintRule: RuleModuleWithDocs<MessageIds, Options> = createTypedRule<
@@ -62,6 +59,7 @@ const actionlintRule: RuleModuleWithDocs<MessageIds, Options> = createTypedRule<
 >({
     create: (context, [rawOptions = {}]) =>
         toRuleListener({
+            // eslint-disable-next-line sonarjs/function-name -- ESLint visitor keys must match AST node type names.
             Program() {
                 const lintOptions = {
                     code: context.sourceCode.text,
@@ -112,6 +110,7 @@ const actionlintRule: RuleModuleWithDocs<MessageIds, Options> = createTypedRule<
                 }
             },
         }),
+    // eslint-disable-next-line eslint-plugin/require-meta-languages -- Current ESLint rule metadata types do not expose the ESLint 10 languages extension.
     meta: {
         defaultOptions: [{}],
         deprecated: false,

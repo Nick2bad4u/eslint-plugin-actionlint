@@ -161,4 +161,24 @@ describe("actionlint bridge rule", () => {
             "Actionlint configuration error"
         );
     }, 30_000);
+
+    it("reports Actionlint worker timeouts as configuration errors", async () => {
+        expect.assertions(2);
+
+        const eslint = createEngine({
+            pyflakes: false,
+            shellcheck: false,
+            timeoutMs: 1,
+        });
+        const [result] = await eslint.lintText(validWorkflowText, {
+            filePath: ".github/workflows/test.yml",
+        });
+
+        const message = result?.messages[0]?.message ?? "";
+
+        expect(result?.messages[0]?.ruleId).toBe("actionlint/actionlint");
+        expect(
+            message.includes("Timed out") || message.includes("ETIMEDOUT")
+        ).toBe(true);
+    }, 30_000);
 });

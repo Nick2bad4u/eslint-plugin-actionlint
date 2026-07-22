@@ -2,7 +2,6 @@ import type { JsonObject, UnknownRecord } from "type-fest";
 
 import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import * as path from "node:path";
 import { isMainThread, parentPort } from "node:worker_threads";
@@ -15,14 +14,13 @@ import type {
     SerializableActionlintResult,
 } from "./actionlint-worker-types.js";
 
+// eslint-disable-next-line import-x/extensions -- Native type-stripped worker execution needs the source extension; TypeScript rewrites it to .js for the package build.
+import { getActionlintBinaryPath } from "./actionlint-binary.ts";
+// eslint-disable-next-line import-x/extensions -- Native type-stripped worker execution needs the source extension; TypeScript rewrites it to .js for the package build.
+import { resolveActionlintVersion } from "./actionlint-platform.ts";
+
 const DONE_STATE = 1 as const;
 const DEFAULT_TIMEOUT_IN_MILLISECONDS = 30_000 as const;
-const requireFromWorker = createRequire(import.meta.url);
-const packageJsonPath = requireFromWorker.resolve(
-    "github-actionlint/package.json"
-);
-const packageRoot = path.dirname(packageJsonPath);
-const actionlintEntry = path.join(packageRoot, "dist", "bin", "actionlint.js");
 type JsonRecord = Readonly<JsonObject>;
 
 const isJsonRecord = (value: unknown): value is JsonRecord =>
@@ -47,20 +45,22 @@ const toSpawnArguments = (
 ): string[] => {
     const options = request.options;
     const cwd = options.cwd ?? process.cwd();
-    const args = [
-        actionlintEntry,
-        "-format",
-        "{{json .}}",
-    ];
+    const args = ["-format", "{{json .}}"];
     if (isDefined(options.configFile)) {
         args.push("-config-file", path.resolve(cwd, options.configFile));
     }
-    if (options.shellcheck === false) args.push("-shellcheck", "");
-    else if (typeof options.shellcheck === "string")
-        args.push("-shellcheck", options.shellcheck);
-    if (options.pyflakes === false) args.push("-pyflakes", "");
-    else if (typeof options.pyflakes === "string")
-        args.push("-pyflakes", options.pyflakes);
+    if (isDefined(options.shellcheck)) {
+        args.push(
+            "-shellcheck",
+            options.shellcheck === false ? "" : options.shellcheck
+        );
+    }
+    if (isDefined(options.pyflakes)) {
+        args.push(
+            "-pyflakes",
+            options.pyflakes === false ? "" : options.pyflakes
+        );
+    }
     const ignoredPathPatterns = options.ignore ?? [];
     for (const pattern of ignoredPathPatterns) args.push("-ignore", pattern);
     args.push(temporaryFilePath);
@@ -125,15 +125,21 @@ const writeTemporaryWorkflow = (filePath: string, code: string): void => {
 
 const spawnActionlint = (
     request: ActionlintWorkerRequest,
-    temporaryFilePath: string
+    temporaryFilePath: string,
+    actionlintExecutable: string
 ): SpawnSyncReturns<string> =>
     // eslint-disable-next-line n/no-sync -- The synchronous worker bridge is required by ESLint rule execution.
-    spawnSync(process.execPath, toSpawnArguments(request, temporaryFilePath), {
-        cwd: request.options.cwd ?? process.cwd(),
-        encoding: "utf8",
-        timeout: request.options.timeoutMs ?? DEFAULT_TIMEOUT_IN_MILLISECONDS,
-        windowsHide: true,
-    });
+    spawnSync(
+        actionlintExecutable,
+        toSpawnArguments(request, temporaryFilePath),
+        {
+            cwd: request.options.cwd ?? process.cwd(),
+            encoding: "utf8",
+            timeout:
+                request.options.timeoutMs ?? DEFAULT_TIMEOUT_IN_MILLISECONDS,
+            windowsHide: true,
+        }
+    );
 
 const assertSuccessfulActionlintResult = (
     result: Readonly<SpawnSyncReturns<string>>
@@ -151,14 +157,21 @@ const removeTemporaryDirectory = (temporaryDirectory: string): void => {
     rmSync(temporaryDirectory, { force: true, recursive: true });
 };
 
-const runActionlint = (
+const runActionlint = async (
     request: ActionlintWorkerRequest
-): SerializableActionlintResult => {
+): Promise<SerializableActionlintResult> => {
     const [temporaryDirectory, temporaryFilePath] =
         createTemporaryWorkflowPath(request);
     try {
         writeTemporaryWorkflow(temporaryFilePath, request.options.code);
-        const result = spawnActionlint(request, temporaryFilePath);
+        const actionlintExecutable = await getActionlintBinaryPath(
+            resolveActionlintVersion()
+        );
+        const result = spawnActionlint(
+            request,
+            temporaryFilePath,
+            actionlintExecutable
+        );
         assertSuccessfulActionlintResult(result);
         return { messages: parseActionlintOutput(result.stdout) };
     } finally {
@@ -178,9 +191,14 @@ const notifyCompletion = (
     Atomics.notify(signal, 0);
 };
 
-const handleRequest = (request: ActionlintWorkerRequest): void => {
+const handleRequest = async (
+    request: ActionlintWorkerRequest
+): Promise<void> => {
     try {
-        notifyCompletion(request, { ok: true, result: runActionlint(request) });
+        notifyCompletion(request, {
+            ok: true,
+            result: await runActionlint(request),
+        });
     } catch (error: unknown) {
         const normalizedError = isErrorLike(error)
             ? {
@@ -198,7 +216,7 @@ const handleRequest = (request: ActionlintWorkerRequest): void => {
 
 if (!isMainThread) {
     const onMessage = (request: ActionlintWorkerRequest): void => {
-        handleRequest(request);
+        void handleRequest(request);
     };
     const removeOnExit = (): void => {
         parentPort?.off("message", onMessage);

@@ -6,6 +6,8 @@ The `actionlint/actionlint` rule runs Actionlint and converts upstream diagnosti
 
 The bridge is for workflow files, typically `.github/workflows/*.{yaml,yml}`. It reports Actionlint findings such as invalid workflow syntax, invalid action usage, expression mistakes, and workflow-specific schema problems.
 
+The plugin downloads Actionlint 1.7.12 from the official `rhysd/actionlint` GitHub release on first use, verifies the archive against the release's SHA-256 checksum manifest, and caches the executable. Set `ACTIONLINT_RELEASE` to select another official release, `ACTIONLINT_BIN` to use an existing executable, or `ACTIONLINT_CACHE_DIR` to move the cache. `GITHUB_TOKEN` is forwarded when downloading release assets.
+
 ## What stays upstream
 
 Keep Actionlint-specific behavior in Actionlint configuration. Do not duplicate that config in ESLint unless the bridge rule exposes a small pass-through option for runtime wiring.
