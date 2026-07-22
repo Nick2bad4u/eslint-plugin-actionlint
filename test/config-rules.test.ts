@@ -117,8 +117,34 @@ describe("actionlint config rules", () => {
         );
     });
 
-    it.each([".github/actionlint.yml", ".github/actionlint.yaml"])(
-        "accepts valid Actionlint config file %s",
+    it.each([
+        ".github/actionlint.yml",
+        ".github/actionlint.yaml",
+        "ActionLintConfig.yml",
+        "ActionLintConfig.yaml",
+    ])("accepts valid Actionlint config file %s", async (filePath) => {
+        expect.assertions(1);
+
+        const eslint = createConfigRuleEngine();
+        const [result] = await eslint.lintText(
+            [
+                "config-variables:",
+                "  - NODE_ENV",
+                "paths:",
+                "  - .github/workflows/*.yml",
+                "self-hosted-runner:",
+                "  labels:",
+                "    - linux",
+                "",
+            ].join("\n"),
+            { filePath }
+        );
+
+        expect(result?.messages).toHaveLength(0);
+    });
+
+    it.each(["actionlint.yml", "actionlint.yaml"])(
+        "rejects unsupported Actionlint config file %s",
         async (filePath) => {
             expect.assertions(1);
 
@@ -137,39 +163,13 @@ describe("actionlint config rules", () => {
                 { filePath }
             );
 
-            expect(result?.messages).toHaveLength(0);
+            expect(result?.messages).toStrictEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        ruleId: "actionlint/require-actionlint-config-file-naming-convention",
+                    }),
+                ])
+            );
         }
     );
-
-    it.each([
-        "ActionLintConfig.yml",
-        "ActionLintConfig.yaml",
-        "actionlint.yml",
-        "actionlint.yaml",
-    ])("rejects legacy Actionlint config file %s", async (filePath) => {
-        expect.assertions(1);
-
-        const eslint = createConfigRuleEngine();
-        const [result] = await eslint.lintText(
-            [
-                "config-variables:",
-                "  - NODE_ENV",
-                "paths:",
-                "  - .github/workflows/*.yml",
-                "self-hosted-runner:",
-                "  labels:",
-                "    - linux",
-                "",
-            ].join("\n"),
-            { filePath }
-        );
-
-        expect(result?.messages).toStrictEqual(
-            expect.arrayContaining([
-                expect.objectContaining({
-                    ruleId: "actionlint/require-actionlint-config-file-naming-convention",
-                }),
-            ])
-        );
-    });
 });

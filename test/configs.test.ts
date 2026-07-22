@@ -38,6 +38,20 @@ describe("actionlint plugin configs", () => {
         );
     });
 
+    it("keeps workflow and configuration file scopes stable", () => {
+        expect.assertions(2);
+
+        expect(actionlintPlugin.configs.actionlintOnly).toMatchObject({
+            files: [".github/workflows/**/*.{yml,yaml}"],
+        });
+        expect(actionlintPlugin.configs.configuration).toMatchObject({
+            files: [
+                "**/.github/actionlint.{yml,yaml}",
+                "**/ActionLintConfig.{yml,yaml}",
+            ],
+        });
+    });
+
     it("keeps recommended narrower than all", () => {
         expect.assertions(4);
 

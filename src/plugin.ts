@@ -20,7 +20,6 @@ const pluginNamespace = "actionlint" as const;
 const bridgeFiles = [".github/workflows/**/*.{yml,yaml}"] as const;
 const configFiles = [
     "**/.github/actionlint.{yml,yaml}",
-    "**/actionlint.{yml,yaml}",
     "**/ActionLintConfig.{yml,yaml}",
 ] as const;
 
