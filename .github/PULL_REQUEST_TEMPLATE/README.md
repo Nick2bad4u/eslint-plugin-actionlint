@@ -6,7 +6,7 @@ Use the shortest template that matches your change:
 - `bugfix.md` for defects and regressions
 - `maintenance.md` for refactors/dependency/build/tooling work
 - `documentation.md` for docs-only updates
-- `quick-fix.md` for very small, low-risk changes
+- `quick-fix.md` for small, low-risk changes
 - `pull_request_template.md` as the general fallback template
 
 When relevant, include:

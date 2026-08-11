@@ -1,4 +1,4 @@
-## Bug
+# Bug fix
 
 - What was broken?
 - Root cause:

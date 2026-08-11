@@ -113,35 +113,43 @@ describe("actionlint bridge rule", () => {
     }, 30_000);
 
     it("reports Actionlint diagnostics through ESLint", async () => {
-        expect.assertions(3);
+        expect.assertions(4);
 
-        await usingTemporaryDirectory(
-            "actionlint-bridge-",
-            async (temporaryDirectory) => {
-                const configPath = path.join(
-                    temporaryDirectory,
-                    ".github/actionlint.yaml"
-                );
-                mkdirSync(path.dirname(configPath), { recursive: true });
-                writeFileSync(configPath, "config-variables:\n  - NODE_ENV\n");
-                const eslint = createEngine({
-                    configFile: configPath,
-                    pyflakes: false,
-                    shellcheck: false,
-                });
-                const [result] = await eslint.lintText(invalidWorkflowText, {
-                    filePath: ".github/workflows/test.yml",
-                });
+        await expect(
+            usingTemporaryDirectory(
+                "actionlint-bridge-",
+                async (temporaryDirectory) => {
+                    const configPath = path.join(
+                        temporaryDirectory,
+                        ".github/actionlint.yaml"
+                    );
+                    mkdirSync(path.dirname(configPath), { recursive: true });
+                    writeFileSync(
+                        configPath,
+                        "config-variables:\n  - NODE_ENV\n"
+                    );
+                    const eslint = createEngine({
+                        configFile: configPath,
+                        pyflakes: false,
+                        shellcheck: false,
+                    });
+                    const [result] = await eslint.lintText(
+                        invalidWorkflowText,
+                        {
+                            filePath: ".github/workflows/test.yml",
+                        }
+                    );
 
-                expect(result?.messages).not.toHaveLength(0);
-                expect(result?.messages[0]?.ruleId).toBe(
-                    "actionlint/actionlint"
-                );
-                expect(result?.messages[0]?.message).toStrictEqual(
-                    expect.any(String)
-                );
-            }
-        );
+                    expect(result?.messages).not.toHaveLength(0);
+                    expect(result?.messages[0]?.ruleId).toBe(
+                        "actionlint/actionlint"
+                    );
+                    expect(result?.messages[0]?.message).toStrictEqual(
+                        expect.any(String)
+                    );
+                }
+            )
+        ).resolves.toBeUndefined();
     }, 30_000);
 
     it("reports Actionlint execution failures as configuration errors", async () => {

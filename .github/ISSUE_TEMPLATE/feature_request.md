@@ -8,6 +8,8 @@ labels:
 assignees: []
 ---
 
+# Feature request
+
 ## Problem statement
 
 <!-- What developer pain does this solve? -->
@@ -23,6 +25,8 @@ assignees: []
 - Requires type checking?: Yes / No / Unsure
 
 ## Alternatives considered
+
+<!-- Describe alternatives and why they do not meet the need. -->
 
 ## Examples
 

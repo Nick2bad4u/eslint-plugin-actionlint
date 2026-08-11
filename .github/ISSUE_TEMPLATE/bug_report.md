@@ -8,6 +8,8 @@ labels:
 assignees: []
 ---
 
+# Bug report
+
 ## Summary
 
 <!-- Briefly describe the bug and impact. -->
@@ -44,7 +46,11 @@ assignees: []
 
 ## Expected behavior
 
+<!-- What did you expect to happen? -->
+
 ## Actual behavior
+
+<!-- What happened instead? -->
 
 ## Environment
 

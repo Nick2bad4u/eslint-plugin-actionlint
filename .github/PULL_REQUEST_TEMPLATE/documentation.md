@@ -1,4 +1,4 @@
-## Docs Change
+# Documentation change
 
 - What docs were updated?
 - Why were they wrong/missing?
