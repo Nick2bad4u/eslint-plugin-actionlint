@@ -1,0 +1,10 @@
+{
+    "name": "@eslint-plugin-actionlint/npm-bootstrap",
+    "version": "0.0.0",
+    "private": true,
+    "description": "Lockfile-backed npm bootstrap for repository automation.",
+    "license": "MIT",
+    "dependencies": {
+        "npm": "12.0.2"
+    }
+}
