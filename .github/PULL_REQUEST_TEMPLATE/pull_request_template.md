@@ -1,4 +1,4 @@
-## Summary
+# Pull request summary
 
 - What changed?
 - Why?

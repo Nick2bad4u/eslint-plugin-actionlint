@@ -1,4 +1,5 @@
-import { ESLint } from "eslint";
+import { createRequire } from "node:module";
+
 import pc from "picocolors";
 
 /** @typedef {import("eslint").Linter.Config} FlatConfig */
@@ -6,6 +7,12 @@ import pc from "picocolors";
 /** @typedef {Record<string, FlatConfig | readonly FlatConfig[]>} PluginConfigs */
 
 const positiveIntegerPattern = /^(?:[1-9]\d*)$/u;
+const supportedEslintPackages = new Set([
+    "eslint",
+    "eslint-9-latest",
+    "eslint-9-min",
+]);
+const require = createRequire(import.meta.url);
 
 /** @param {string} value */
 const parsePositiveInteger = (value) => {
@@ -26,9 +33,10 @@ const getExpectedEslintMajor = (argv) => {
     const expectedFlag = argv.find((argument) =>
         argument.startsWith("--expect-eslint-major=")
     );
-    if (expectedFlag === undefined) return undefined;
-
-    const rawMajor = expectedFlag.slice("--expect-eslint-major=".length);
+    const rawMajor =
+        expectedFlag?.slice("--expect-eslint-major=".length) ??
+        process.env["ESLINT_COMPAT_EXPECTED_MAJOR"];
+    if (rawMajor === undefined) return undefined;
     const parsedMajor = parsePositiveInteger(rawMajor);
     if (parsedMajor === undefined) {
         throw new TypeError(
@@ -36,6 +44,56 @@ const getExpectedEslintMajor = (argv) => {
         );
     }
     return parsedMajor;
+};
+
+/**
+ * @param {readonly string[]} argv
+ *
+ * @throws {TypeError} When the requested lockfile-backed ESLint package alias
+ *   is unsupported.
+ */
+const getEslintPackageName = (argv) => {
+    const packageFlag = argv.find((argument) =>
+        argument.startsWith("--eslint-package=")
+    );
+    const packageName =
+        packageFlag?.slice("--eslint-package=".length) ??
+        process.env["ESLINT_COMPAT_PACKAGE"] ??
+        "eslint";
+    if (!supportedEslintPackages.has(packageName)) {
+        throw new TypeError(
+            `Unsupported --eslint-package value: ${packageName}.`
+        );
+    }
+    return packageName;
+};
+
+/**
+ * @param {unknown} value
+ *
+ * @returns {value is { ESLint: typeof import("eslint").ESLint }}
+ */
+const isEslintModule = (value) => {
+    return (
+        typeof value === "object" &&
+        value !== null &&
+        typeof Reflect.get(value, "ESLint") === "function"
+    );
+};
+
+/**
+ * @param {string} packageName
+ *
+ * @throws {TypeError} When the selected package does not expose ESLint.
+ */
+const loadEslint = (packageName) => {
+    const eslintModule = /** @type {unknown} */ (require(packageName));
+    if (!isEslintModule(eslintModule)) {
+        throw new TypeError(
+            `Package ${packageName} does not expose an ESLint constructor.`
+        );
+    }
+    return eslintModule.ESLint;
 };
 
 /**
@@ -93,7 +151,10 @@ const assertDiagnostic = (result, ruleId, label) => {
 };
 
 const run = async () => {
-    const expectedEslintMajor = getExpectedEslintMajor(process.argv.slice(2));
+    const argv = process.argv.slice(2);
+    const expectedEslintMajor = getExpectedEslintMajor(argv);
+    const eslintPackageName = getEslintPackageName(argv);
+    const ESLint = loadEslint(eslintPackageName);
     const installedEslintMajor = getEslintMajorVersion(ESLint.version);
 
     if (

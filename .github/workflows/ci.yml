@@ -62,8 +62,12 @@ jobs:
                   cache: "npm"
                   cache-dependency-path: "package-lock.json"
 
+            - name: "Install repository npm version"
+              run: "npm install --global npm@12.0.2"
+              working-directory: "${{ runner.temp }}"
+
             - name: "Install dependencies"
-              run: "npm ci --force"
+              run: "npm ci"
 
             - name: "Build package"
               run: "npm run build"
@@ -129,11 +133,9 @@ jobs:
             fail-fast: true
             matrix:
                 include:
-                    - eslint-js-version: "9.0.0"
-                      eslint-version: "9.0.0"
+                    - eslint_package: "eslint-9-min"
                       label: "9.0.0"
-                    - eslint-js-version: "^9.39.1"
-                      eslint-version: "^9.39.1"
+                    - eslint_package: "eslint-9-latest"
                       label: "9.latest"
         defaults:
             run:
@@ -155,14 +157,18 @@ jobs:
                   cache: "npm"
                   cache-dependency-path: "package-lock.json"
 
+            - name: "Install repository npm version"
+              run: "npm install --global npm@12.0.2"
+              working-directory: "${{ runner.temp }}"
+
             - name: "Install dependencies"
-              run: "npm ci --force"
+              run: "npm ci"
 
             - name: "Build package"
               run: "npm run build"
 
-            - name: "Install ESLint 9 runtime for compatibility smoke checks"
-              run: "npm install --no-save --force eslint@${{ matrix.eslint-version }} @eslint/js@${{ matrix.eslint-js-version }}"
-
             - name: "Run ESLint 9 compatibility smoke checks"
-              run: "npm run lint:compat:eslint9 -- --expect-eslint-major=9"
+              run: "npm run lint:compat:eslint9"
+              env:
+                  ESLINT_COMPAT_EXPECTED_MAJOR: "9"
+                  ESLINT_COMPAT_PACKAGE: "${{ matrix.eslint_package }}"

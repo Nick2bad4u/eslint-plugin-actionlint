@@ -1,4 +1,4 @@
-## Maintenance Scope
+# Maintenance scope
 
 - What was cleaned up/updated?
 

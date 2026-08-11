@@ -1,4 +1,4 @@
-## Quick Fix
+# Quick fix
 
 - Issue fixed:
 - One-line reason:

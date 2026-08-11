@@ -6,6 +6,8 @@ docs/docusaurus/.docusaurus/
 docs/docusaurus/build/
 docs/docusaurus/site-docs/
 docs/docusaurus/static/eslint-inspector/
+temp/
+.lychee.report.md
 CHANGELOG.md
 AGENTS.md
 **/AGENTS.md

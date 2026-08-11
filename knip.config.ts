@@ -13,6 +13,7 @@ const knipConfig: KnipConfig = {
     $schema: "https://unpkg.com/knip@5/schema.json",
     entry: [],
     ignore: [
+        "docs/docusaurus/src/components/git-hub-stats.module.css.d.ts",
         "docs/docusaurus/src/css/custom.css.d.ts",
         "docs/docusaurus/typedoc-plugins/hashToBangLinks.mjs",
         "docs/docusaurus/typedoc-plugins/hashToBangLinksCore.d.mts",
@@ -22,8 +23,11 @@ const knipConfig: KnipConfig = {
         "docs/docusaurus/typedoc-plugins/prefixDocLinksCore.mjs",
     ],
     ignoreBinaries: [
+        "actionlint",
         "git-cz",
+        "gitleaks",
         "grype",
+        "lychee",
         "open-cli",
         // False-positve Knip thinks knip.config.ts is a binary entry point, but it's actually just a config file.
         "knip.config.ts",
@@ -51,13 +55,21 @@ const knipConfig: KnipConfig = {
         "@stylelint.*",
         "@types.*",
         "eslint.*",
-        "madge",
+        "git-cliff",
+        "gitcliff-config-nick2bad4u",
+        "gitleaks-config-nick2bad4u",
+        "jscpd-config-nick2bad4u",
+        "lychee-config-nick2bad4u",
+        "ncu-config-nick2bad4u",
         "postcss.*",
         "remark.*",
+        "secretlint",
+        "secretlint-config-nick2bad4u",
         "stylelint.*",
         "ts.*",
         "type.*",
         "unified",
+        "yamllint-config-nick2bad4u",
 
         // Items flagged by knip report (ignored to suppress false-positives / repo-local tools)
         "clsx",
