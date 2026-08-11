@@ -57,8 +57,10 @@ jobs:
                   cache-dependency-path: "package-lock.json"
 
             - name: "Install repository npm version"
-              run: "npm install --global npm@12.0.2"
-              working-directory: "${{ runner.temp }}"
+              run: |
+                  npm ci --prefix .github/npm-bootstrap --ignore-scripts
+                  echo "$GITHUB_WORKSPACE/.github/npm-bootstrap/node_modules/.bin" >> "$GITHUB_PATH"
+                  .github/npm-bootstrap/node_modules/.bin/npm --version
 
             - name: "Install dependencies"
               run: "npm ci"

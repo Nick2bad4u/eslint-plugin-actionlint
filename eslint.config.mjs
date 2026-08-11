@@ -53,6 +53,13 @@ const config = [
             "unicorn/consistent-boolean-name": "off",
         },
     },
+    {
+        files: [".github/npm-bootstrap/package.json"],
+        name: "Keep the npm bootstrap reproducibly pinned",
+        rules: {
+            "node-dependencies/absolute-version": "off",
+        },
+    },
     { ...localConfigurationPreset, name: "Local Actionlint config rules" },
 ];
 

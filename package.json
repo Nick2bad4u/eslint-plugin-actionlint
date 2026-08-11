@@ -87,7 +87,7 @@
         "lint:package": "npm run lint:node-version-files && npm run lint:package-sort && npm run lint:packagelintrc",
         "lint:package-check": "npx publint && npx attw --pack .",
         "lint:package-json": "npx npmPkgJsonLint . --config .npmpackagejsonlintrc.json",
-        "lint:package-sort": "npx sort-package-json \"./package.json\" \"./docs/docusaurus/package.json\"",
+        "lint:package-sort": "npx sort-package-json \"./package.json\" \"./docs/docusaurus/package.json\" \"./.github/npm-bootstrap/package.json\"",
         "lint:packagelintrc": "npx npmPkgJsonLint . --config .npmpackagejsonlintrc.json",
         "lint:prettier": "npx prettier . --log-level warn --cache --cache-location=.cache/.prettier-cache --cache-strategy=content --check",
         "lint:prettier:fix": "npx prettier . --log-level warn --cache --cache-location=.cache/.prettier-cache --cache-strategy=content --write",
@@ -174,7 +174,7 @@
         "eslint": "^9.0.0 || ^10.0.0",
         "typescript": "^5.0.0 || ^6.0.0"
     },
-    "packageManager": "npm@12.0.2",
+    "packageManager": "npm@12.0.2+sha512.b885e890b9418fa1693544d05f53e64f9a73ec194837d4258b15fecdd692347b1dd2a517b1b0cbaf9d31cd8e92c3b70956bd2ecc72833a57b4b3098f5bfa7943",
     "engines": {
         "node": ">=22.0.0"
     },
