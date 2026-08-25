@@ -15,6 +15,7 @@ npm install --save-dev eslint-plugin-actionlint eslint yaml-eslint-parser
 - **Supported ESLint versions:** `9.x` and `10.x`
 - **Config system:** Flat Config only
 - **Node.js runtime:** `>=22.0.0`
+- **Oxlint:** not compatible as a complete plugin (verified with Oxlint `1.80.0`); all 10 rules and every preset require YAML workflow or config parsing, and [Oxlint JavaScript plugins do not support custom parsers](https://oxc.rs/docs/guide/usage/linter/js-plugins.html#api-support), so use ESLint for this plugin.
 
 ## Quick start
 
