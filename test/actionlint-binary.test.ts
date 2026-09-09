@@ -1,9 +1,19 @@
-import AdmZip from "adm-zip";
+import { zipSync } from "fflate";
 import { createHash } from "node:crypto";
-import { chmod, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import {
+    chmod,
+    mkdir,
+    mkdtemp,
+    readdir,
+    readFile,
+    rm,
+    symlink,
+    writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import * as path from "node:path";
 import { create as createTarArchive } from "tar";
+import { assertDefined } from "ts-extras";
 import { describe, expect, it, vi } from "vitest";
 
 import {
@@ -52,15 +62,103 @@ const createFetch = (
 };
 
 describe("actionlint binary acquisition", () => {
+    it("ignores ZIP paths through an existing destination junction", async () => {
+        expect.assertions(3);
+
+        await expect(
+            usingTemporaryDirectory(async (temporaryDirectory) => {
+                const protectedDirectory = path.join(
+                    temporaryDirectory,
+                    "protected"
+                );
+                await mkdir(protectedDirectory);
+                const protectedFile = path.join(
+                    protectedDirectory,
+                    "sentinel.txt"
+                );
+                await writeFile(protectedFile, "unchanged");
+                const archive = zipSync({
+                    "../protected/sentinel.txt": Buffer.from("traversal"),
+                    "actionlint.exe": Buffer.from("windows-actionlint"),
+                    "linked/sentinel.txt": Buffer.from("overwritten"),
+                });
+                const mocked = createFetch(
+                    archive,
+                    "actionlint_1.7.12_windows_amd64.zip"
+                );
+                const fetchImplementation: typeof fetch = async (
+                    input,
+                    init
+                ) => {
+                    if (typeof input === "string" && input.endsWith(".zip")) {
+                        const cacheDirectory = path.join(
+                            temporaryDirectory,
+                            "bin"
+                        );
+                        const entries = await readdir(cacheDirectory);
+                        const staging = entries.find((entry) =>
+                            entry.startsWith(".actionlint-download-")
+                        );
+                        assertDefined(staging);
+                        await symlink(
+                            protectedDirectory,
+                            path.join(cacheDirectory, staging, "linked"),
+                            "junction"
+                        );
+                    }
+                    return await mocked.fetchImplementation(input, init);
+                };
+                const executable = await getActionlintBinaryPath("1.7.12", {
+                    architecture: "x64",
+                    environment: { ACTIONLINT_CACHE_DIR: temporaryDirectory },
+                    fetchImplementation,
+                    platform: "win32",
+                });
+
+                await expect(readFile(executable, "utf8")).resolves.toBe(
+                    "windows-actionlint"
+                );
+                await expect(readFile(protectedFile, "utf8")).resolves.toBe(
+                    "unchanged"
+                );
+            })
+        ).resolves.toBeUndefined();
+    });
+
+    it("rejects a ZIP without the expected executable", async () => {
+        expect.assertions(2);
+
+        await expect(
+            usingTemporaryDirectory(async (temporaryDirectory) => {
+                const archive = zipSync({
+                    "nested/actionlint.exe": Buffer.from("unexpected"),
+                });
+                const { fetchImplementation } = createFetch(
+                    archive,
+                    "actionlint_1.7.12_windows_amd64.zip"
+                );
+
+                await expect(
+                    getActionlintBinaryPath("1.7.12", {
+                        architecture: "x64",
+                        environment: {
+                            ACTIONLINT_CACHE_DIR: temporaryDirectory,
+                        },
+                        fetchImplementation,
+                        platform: "win32",
+                    })
+                ).rejects.toThrow("did not contain 'actionlint.exe'");
+            })
+        ).resolves.toBeUndefined();
+    });
+
     it("extracts a verified Windows archive and reuses the atomic cache", async () => {
         expect.assertions(6);
 
         await expect(
             usingTemporaryDirectory(async (temporaryDirectory) => {
                 const executable = Buffer.from("windows-actionlint");
-                const zip = new AdmZip();
-                zip.addFile("actionlint.exe", executable);
-                const archive = zip.toBuffer();
+                const archive = zipSync({ "actionlint.exe": executable });
                 const assetName = "actionlint_1.7.12_windows_amd64.zip";
                 const { fetchImplementation, requests } = createFetch(
                     archive,
@@ -159,9 +257,9 @@ describe("actionlint binary acquisition", () => {
 
         await expect(
             usingTemporaryDirectory(async (temporaryDirectory) => {
-                const zip = new AdmZip();
-                zip.addFile("actionlint.exe", Buffer.from("untrusted"));
-                const archive = zip.toBuffer();
+                const archive = zipSync({
+                    "actionlint.exe": Buffer.from("untrusted"),
+                });
                 const { fetchImplementation } = createFetch(
                     archive,
                     "actionlint_1.7.12_windows_amd64.zip",

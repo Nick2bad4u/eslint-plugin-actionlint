@@ -87,7 +87,8 @@
         "lint:package": "npm run lint:node-version-files && npm run lint:package-sort && npm run lint:packagelintrc",
         "lint:package-check": "npx publint && npx attw --pack .",
         "lint:package-json": "npx npmPkgJsonLint . --config .npmpackagejsonlintrc.json",
-        "lint:package-sort": "npx sort-package-json \"./package.json\" \"./docs/docusaurus/package.json\" \"./.github/npm-bootstrap/package.json\"",
+        "lint:package-sort": "npx sort-package-json --check \"./package.json\" \"./docs/docusaurus/package.json\" \"./.github/npm-bootstrap/package.json\"",
+        "lint:package-sort:fix": "npx sort-package-json \"./package.json\" \"./docs/docusaurus/package.json\" \"./.github/npm-bootstrap/package.json\"",
         "lint:packagelintrc": "npx npmPkgJsonLint . --config .npmpackagejsonlintrc.json",
         "lint:prettier": "npx prettier . --log-level warn --cache --cache-location=.cache/.prettier-cache --cache-strategy=content --check",
         "lint:prettier:fix": "npx prettier . --log-level warn --cache --cache-location=.cache/.prettier-cache --cache-strategy=content --write",
@@ -95,7 +96,7 @@
         "lint:remark:fix": "npx remark . --ignore-path .remarkignore --output",
         "prepublishOnly": "npm run release:check",
         "release:check": "npm run release:verify",
-        "release:verify": "npm run build && npm run docs:api && npm run typecheck && npm run test && npm run sync:readme-rules-table && npm run sync:presets-rules-matrix && npm run docs:check-links && npm run docs:build && npm run lint:package-check && npm pack --dry-run",
+        "release:verify": "npm run build && npm run docs:api && npm run typecheck && npm run test && npm run sync:readme-rules-table && npm run sync:presets-rules-matrix && npm run docs:check-links && npm run test:docs-images && npm run docs:build && npm run lint:package-check && npm pack --dry-run",
         "remark:fix": "npx remark --rc-path .remarkrc.mjs --silently-ignore --ignore-path .remarkignore --frail --quiet --output -- \"*.{md,mdx}\" \"docs/**/*.{md,mdx}\"",
         "sync:node-version-files": "node scripts/sync-node-version-files.mjs",
         "sync:peer-eslint-range": "node scripts/sync-peer-eslint-range.mjs",
@@ -106,17 +107,26 @@
         "pretest": "npm run build",
         "test": "npx vitest run",
         "test:coverage": "npx vitest run --coverage --reporter=default",
+        "test:docs-images": "node scripts/check-docs-images.mjs",
         "typecheck": "npx tsc -p tsconfig.json --noEmit && npx tsc -p tsconfig.build.json --noEmit && npx tsc -p tsconfig.eslint.json --noEmit && npx tsc -p tsconfig.js.json --noEmit && npm run --workspace docs/docusaurus typecheck",
         "update-actions": "npx actions-up --yes --style sha",
         "update-deps": "npx ncu --configFileName .ncurc.workspaces.json --configFilePath node_modules/ncu-config-nick2bad4u && npm run sync:peer-eslint-range && npm install"
     },
     "overrides": {
-        "jsonc-eslint-parser": "$jsonc-eslint-parser"
+        "@docusaurus/mdx-loader": {
+            "image-size": "npm:image-size-next@2.1.1"
+        },
+        "jsonc-eslint-parser": "$jsonc-eslint-parser",
+        "qs": "^6.16.0",
+        "serialize-javascript": "^7.1.1",
+        "sockjs": {
+            "uuid": "^11.1.1"
+        }
     },
     "dependencies": {
         "@typescript-eslint/parser": "^8.67.0",
         "@typescript-eslint/utils": "^8.67.0",
-        "adm-zip": "^0.6.0",
+        "fflate": "^0.8.3",
         "tar": "^7.5.22",
         "ts-extras": "^1.3.0",
         "type-fest": "^5.8.0",
@@ -126,11 +136,10 @@
         "@arethetypeswrong/cli": "^0.18.5",
         "@eslint/config-inspector": "^3.2.0",
         "@microsoft/tsdoc-config": "^0.18.1",
-        "@types/adm-zip": "^0.5.8",
         "@types/node": "^26.2.0",
         "@typescript-eslint/rule-tester": "^8.67.0",
-        "@vitest/coverage-v8": "^4.1.10",
-        "@vitest/ui": "^4.1.10",
+        "@vitest/coverage-v8": "^4.1.11",
+        "@vitest/ui": "^4.1.11",
         "actionlint": "^2.0.6",
         "cross-env": "^10.1.0",
         "eslint": "^10.8.1",
@@ -166,7 +175,7 @@
         "typescript-eslint": "^8.67.0",
         "vite": "^8.2.1",
         "vite-tsconfig-paths": "^6.1.1",
-        "vitest": "^4.1.10",
+        "vitest": "^4.1.11",
         "yamllint-config-nick2bad4u": "^1.1.1",
         "yamllint-js": "^0.2.4"
     },

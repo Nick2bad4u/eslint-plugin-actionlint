@@ -1,6 +1,6 @@
 import type { UnknownRecord } from "type-fest";
 
-import AdmZip from "adm-zip";
+import { unzipSync } from "fflate";
 import { createHash, randomUUID } from "node:crypto";
 import { constants as fileSystemConstants } from "node:fs";
 import {
@@ -8,6 +8,7 @@ import {
     copyFile,
     mkdir,
     mkdtemp,
+    readFile,
     rename,
     rm,
     stat,
@@ -140,8 +141,21 @@ const extractArchive = async (
     asset: ActionlintPlatformAsset
 ): Promise<void> => {
     if (asset.archiveExtension === "zip") {
-        const archive = new AdmZip(archivePath);
-        archive.extractAllTo(destination, true, false);
+        // Inflate only the expected executable; ZIP entry paths never become filesystem paths.
+        // eslint-disable-next-line n/no-sync, security/detect-non-literal-fs-filename -- Decode the verified binary inside the existing bridge worker; the archive path is inside its unique staging directory.
+        const archive = unzipSync(await readFile(archivePath), {
+            filter: (entry) => entry.name === asset.executableName,
+        });
+        const executable = archive[asset.executableName];
+        if (isDefined(executable)) {
+            // Exclusive creation rejects existing files and symlinks at the destination.
+            // eslint-disable-next-line security/detect-non-literal-fs-filename -- The filename comes from the fixed platform asset map, never from ZIP entries.
+            await writeFile(
+                path.join(destination, asset.executableName),
+                executable,
+                { flag: "wx" }
+            );
+        }
         return;
     }
     await extractTarArchive({
