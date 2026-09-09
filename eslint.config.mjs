@@ -54,6 +54,18 @@ const config = [
         },
     },
     {
+        files: ["package.json"],
+        name: "Exercise the advertised ESLint 9 compatibility range",
+        rules: {
+            // These aliases test the minimum and latest supported ESLint 9 hosts.
+            // The development linter itself remains on ESLint 10.
+            "node-dependencies/no-deprecated": [
+                "error",
+                { allows: ["eslint-9-latest", "eslint-9-min"] },
+            ],
+        },
+    },
+    {
         files: [".github/npm-bootstrap/package.json"],
         name: "Keep the npm bootstrap reproducibly pinned",
         rules: {
